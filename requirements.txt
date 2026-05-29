@@ -1,0 +1,10 @@
+# FasoCeremonies - Python Dependencies
+# All dependencies are from the Python standard library.
+# No external packages are required.
+
+# Standard library modules used:
+# - os
+# - re
+# - uuid
+# - datetime
+# - typing
