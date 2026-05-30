@@ -1,6 +1,6 @@
 """
 FasoCeremonies - Guest Portal Module
-======================================
+
 Provides the complete Guest interface for interacting with ceremonies.
 
 The Guest portal allows:
@@ -40,20 +40,16 @@ from services import (
     pause, select_from_list, display_table,
 )
 
-
-# ══════════════════════════════════════════════
 # GUEST PORTAL CLASS
-# ══════════════════════════════════════════════
 
 class GuestPortal:
-    """Guest portal for viewing invitations, RSVPs, and contributing.
+    """Main portal for the guest side of the app.
 
-    The guest selects or creates their profile, then interacts
-    with their personal dashboard.
+    The guest identifies first (or creates a profile),
+    then navigates their personal space.
     """
-
     def __init__(self) -> None:
-        """Initialize the portal and load data."""
+        """Set up internal lists and load data from files."""
         self.ceremonies: List[Ceremony] = []
         self.guests: List[Guest] = []
         self.invitations: List[Invitation] = []
@@ -63,23 +59,21 @@ class GuestPortal:
         self._reload_data()
 
     def _reload_data(self) -> None:
-        """Reload all data from TXT files."""
+        """Reload data from files — useful if changes were made elsewhere."""
         self.ceremonies, self.guests, self.invitations, \
             self.expenses, self.contributions = load_all()
 
     def _save(self) -> None:
-        """Persist all data to TXT files."""
+        """Write all data back to the TXT files."""
         save_all(self.ceremonies, self.guests, self.invitations,
                  self.expenses, self.contributions)
 
-    # ──────────────────────────────────────────
     # GUEST IDENTIFICATION
-    # ──────────────────────────────────────────
-
+   
     def identify_guest(self) -> bool:
-        """Prompt the guest to identify themselves or register.
+        """Ask the guest to identify themselves or create a new profile.
 
-        Returns True if a guest was successfully identified.
+        Returns False if the guest cancels or no profiles exist yet.
         """
         clear_screen()
         print(draw_section_header("GUEST IDENTIFICATION"))
@@ -154,10 +148,8 @@ class GuestPortal:
         pause()
         return True
 
-    # ──────────────────────────────────────────
     # MAIN MENU
-    # ──────────────────────────────────────────
-
+    
     def run(self) -> None:
         """Main guest portal loop after identification."""
         while True:
@@ -225,7 +217,7 @@ class GuestPortal:
         print()
 
     def _display_main_menu(self) -> None:
-        """Display the guest main menu options."""
+        """Show a quick overview of the guest's invitations and contributions."""
         menu_items = [
             ("1", "View My Invitations"),
             ("2", "Respond to an Invitation (RSVP)"),
@@ -242,12 +234,10 @@ class GuestPortal:
             print(f"{n} {t}")
         print()
 
-    # ──────────────────────────────────────────
     # 1. VIEW MY INVITATIONS
-    # ──────────────────────────────────────────
 
     def _view_invitations(self) -> None:
-        """Display all invitations for the current guest."""
+       """Print the main menu."""
         if not self.current_guest:
             return
 
@@ -285,16 +275,14 @@ class GuestPortal:
                 if inv.message:
                     ceremony = find_ceremony_by_id(self.ceremonies, inv.ceremony_id)
                     name = ceremony.name if ceremony else inv.ceremony_id
-                    print(colored(f"    {name}: \"{inv.message}\"", Theme.MUTED))
+                    print(colored(f"  {name}: \"{inv.message}\"", Theme.MUTED))
 
         pause()
 
-    # ──────────────────────────────────────────
     # 2. RESPOND TO INVITATION (RSVP)
-    # ──────────────────────────────────────────
 
     def _respond_to_invitation(self) -> None:
-        """Allow the guest to respond to a pending invitation."""
+        """Let the guest pick a pending invitation and submit their RSVP."""
         if not self.current_guest:
             return
 
@@ -360,9 +348,7 @@ class GuestPortal:
 
         pause()
 
-    # ──────────────────────────────────────────
     # 3. VIEW CEREMONY DETAILS
-    # ──────────────────────────────────────────
 
     def _view_ceremony_details(self) -> None:
         """View details of ceremonies the guest is invited to."""
@@ -413,9 +399,8 @@ class GuestPortal:
         print()
         pause()
 
-    # ──────────────────────────────────────────
     # 4. MAKE A CONTRIBUTION
-    # ──────────────────────────────────────────
+   
 
     def _make_contribution(self) -> None:
         """Make a financial contribution to a ceremony."""
@@ -448,7 +433,7 @@ class GuestPortal:
         self._make_contribution_to_ceremony(ceremony_id)
 
     def _make_contribution_to_ceremony(self, ceremony_id: str) -> None:
-        """Make a contribution to a specific ceremony."""
+        """Handle the actual contribution once a ceremony has been selected."""
         if not self.current_guest:
             return
 
@@ -483,11 +468,10 @@ class GuestPortal:
         print_success(f"Contribution of {format_fcfa(amount)} recorded. Thank you!")
         pause()
 
-    # ──────────────────────────────────────────
     # 5. MY CONTRIBUTION HISTORY
-    # ──────────────────────────────────────────
 
-    def _view_contribution_history(self) -> None:
+
+    #def _view_contribution_history(self) -> None:
         """View all contributions made by the current guest."""
         if not self.current_guest:
             return
@@ -519,12 +503,10 @@ class GuestPortal:
         print(colored(f"  Total Contributions: {format_fcfa(total)}", Theme.VALUE))
         pause()
 
-    # ──────────────────────────────────────────
     # 6. UPCOMING EVENTS
-    # ──────────────────────────────────────────
 
     def _upcoming_events(self) -> None:
-        """Display upcoming ceremonies the guest is invited to."""
+        """List the guest's accepted ceremonies, sorted by date."""
         if not self.current_guest:
             return
 
@@ -569,12 +551,10 @@ class GuestPortal:
 
         pause()
 
-    # ──────────────────────────────────────────
     # 7. EDIT PROFILE
-    # ──────────────────────────────────────────
-
+   
     def _edit_profile(self) -> None:
-        """Edit the current guest's profile."""
+        """Let the guest update their personal info — blank fields are left unchanged."""
         if not self.current_guest:
             return
 
@@ -610,12 +590,10 @@ class GuestPortal:
         print_success("Profile updated.")
         pause()
 
-    # ──────────────────────────────────────────
     # 0. LOGOUT
-    # ──────────────────────────────────────────
 
     def _logout(self) -> None:
-        """Save data and return to main menu."""
+        """Save any pending changes and log the guest out before returning to the main menu."""
         self._save()
         self.current_guest = None
         print_success("Data saved. Logging out...")
