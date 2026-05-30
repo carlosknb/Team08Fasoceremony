@@ -1,18 +1,18 @@
 """
 FasoCeremonies - Data Models Module
-=====================================
+
 Defines the complete OOP hierarchy for ceremony management.
 
 Classes:
-    Ceremony      - Abstract parent class for all ceremony types
-    MarriageCeremony   - Marriage-specific ceremony (dot, stages, families)
-    FuneralCeremony    - Funeral-specific ceremony (deceased, mourning, days)
-    BaptismCeremony    - Baptism-specific ceremony (godparents, church)
-    SeminarCeremony    - Seminar/conference (speakers, topics, venue)
-    Guest         - Guest entity with contact info and RSVP tracking
-    Invitation    - Links a Guest to a Ceremony with RSVP status
-    Expense       - Financial expense record for a ceremony
-    Contribution  - Financial contribution from a guest to a ceremony
+    Ceremony : Abstract parent class for all ceremony types
+    MarriageCeremony : Marriage-specific ceremony (dot, stages, families)
+    FuneralCeremony : Funeral-specific ceremony (deceased, mourning, days)
+    BaptismCeremony : Baptism-specific ceremony (godparents, church)
+    SeminarCeremony : Seminar/conference (speakers, topics, venue)
+    Guest : Guest entity with contact info and RSVP tracking
+    Invitation : Links a Guest to a Ceremony with RSVP status
+    Expense : Financial expense record for a ceremony
+    Contribution : Financial contribution from a guest to a ceremony
 """
 
 from __future__ import annotations
@@ -29,26 +29,23 @@ from config import (
 
 
 def _generate_id(prefix: str) -> str:
-    """Generate a unique ID with the given prefix."""
     short = uuid.uuid4().hex[:8].upper()
     return f"{prefix}-{short}"
 
 
-# ══════════════════════════════════════════════
 # EXPENSE MODEL
-# ══════════════════════════════════════════════
 
 class Expense:
     """Represents a single expense record for a ceremony.
 
     Attributes:
-        expense_id   - Unique identifier
-        ceremony_id  - ID of the parent ceremony
-        category     - Expense category (e.g. 'catering', 'venue')
-        description  - Human-readable description
-        amount       - Amount in FCFA
-        paid         - Whether the expense has been paid
-        date_recorded - Date when the expense was recorded
+        expense_id : Unique identifier
+        ceremony_id : ID of the parent ceremony
+        category : Expense category (e.g. 'catering', 'venue')
+        description : Human-readable description
+        amount : Amount in FCFA
+        paid : Whether the expense has been paid
+        date_recorded : Date when the expense was recorded
     """
 
     def __init__(
@@ -74,7 +71,7 @@ class Expense:
         self.paid = True
 
     def to_text_line(self) -> str:
-        """Serialize to a single TXT line."""
+        """Serialize expense fields to a single FIELD_SEP-delimited TXT line."""
         parts = [
             self.expense_id,
             self.ceremony_id,
@@ -88,7 +85,7 @@ class Expense:
 
     @classmethod
     def from_text_line(cls, line: str) -> "Expense":
-        """Deserialize from a single TXT line."""
+        """Rebuild an Expense object from a serialized TXT line."""
         parts = line.strip().split(FIELD_SEP)
         return cls(
             expense_id=parts[0],
@@ -100,21 +97,18 @@ class Expense:
             date_recorded=parts[6],
         )
 
-
-# ══════════════════════════════════════════════
 # CONTRIBUTION MODEL
-# ══════════════════════════════════════════════
 
 class Contribution:
     """Represents a financial contribution from a guest to a ceremony.
 
     Attributes:
-        contribution_id - Unique identifier
-        ceremony_id     - ID of the ceremony
-        guest_id        - ID of the contributing guest
-        amount          - Amount in FCFA
-        message         - Optional message from the contributor
-        date_contributed - Date of contribution
+        contribution_id : Unique identifier
+        ceremony_id : ID of the ceremony
+        guest_id : ID of the contributing guest
+        amount : Amount in FCFA
+        message : Optional message from the contributor
+        date_contributed : Date of contribution
     """
 
     def __init__(
@@ -134,7 +128,7 @@ class Contribution:
         self.date_contributed: str = date_contributed or date.today().isoformat()
 
     def to_text_line(self) -> str:
-        """Serialize to a single TXT line."""
+        """Serialize contribution fields to a single FIELD_SEP-delimited TXT line."""
         parts = [
             self.contribution_id,
             self.ceremony_id,
@@ -147,7 +141,7 @@ class Contribution:
 
     @classmethod
     def from_text_line(cls, line: str) -> "Contribution":
-        """Deserialize from a single TXT line."""
+        """Rebuild a Contribution object from a serialized TXT line."""
         parts = line.strip().split(FIELD_SEP)
         return cls(
             contribution_id=parts[0],
@@ -158,22 +152,19 @@ class Contribution:
             date_contributed=parts[5] if len(parts) > 5 else date.today().isoformat(),
         )
 
-
-# ══════════════════════════════════════════════
 # GUEST MODEL
-# ══════════════════════════════════════════════
 
 class Guest:
     """Represents a guest in the system.
 
     Attributes:
-        guest_id   - Unique identifier
-        first_name - Guest's first name
-        last_name  - Guest's last name
-        phone      - Phone number
-        email      - Email address
-        address    - Physical address / locality
-        notes      - Additional notes
+        guest_id : Unique identifier
+        first_name :Guest's first name
+        last_name : Guest's last name
+        phone: Phone number
+        email: Email address
+        address : Physical address / locality
+        notes : Additional notes
     """
 
     def __init__(
@@ -196,11 +187,10 @@ class Guest:
 
     @property
     def full_name(self) -> str:
-        """Return the guest's full name."""
         return f"{self.first_name} {self.last_name}"
 
     def to_text_line(self) -> str:
-        """Serialize to a single TXT line."""
+        """Serialize guest fields to a single FIELD_SEP-delimited TXT line."""
         parts = [
             self.guest_id,
             self.first_name,
@@ -214,7 +204,7 @@ class Guest:
 
     @classmethod
     def from_text_line(cls, line: str) -> "Guest":
-        """Deserialize from a single TXT line."""
+        """Rebuild a Guest object from a serialized TXT line."""
         parts = line.strip().split(FIELD_SEP)
         return cls(
             guest_id=parts[0],
@@ -225,13 +215,11 @@ class Guest:
             address=parts[5] if len(parts) > 5 else "",
             notes=parts[6] if len(parts) > 6 else "",
         )
-
-
-# ══════════════════════════════════════════════
+        
 # INVITATION MODEL
-# ══════════════════════════════════════════════
 
 class Invitation:
+    
     """Links a Guest to a Ceremony with RSVP and side information.
 
     Attributes:
@@ -269,12 +257,11 @@ class Invitation:
         self.message: str = message
 
     def respond(self, status: str) -> None:
-        """Update the RSVP status of this invitation."""
+        """Update the RSVP status.Does nothing if status is not in RSVP_STATUSES."""
         if status in RSVP_STATUSES:
             self.rsvp_status = status
 
     def mark_sent(self) -> None:
-        """Mark this invitation as sent."""
         self.sent = True
 
     def to_text_line(self) -> str:
@@ -294,7 +281,7 @@ class Invitation:
 
     @classmethod
     def from_text_line(cls, line: str) -> "Invitation":
-        """Deserialize from a single TXT line."""
+        """Rebuild an Invitation object from a serialized TXT line."""
         parts = line.strip().split(FIELD_SEP)
         return cls(
             invitation_id=parts[0],
@@ -308,24 +295,17 @@ class Invitation:
             message=parts[8] if len(parts) > 8 else "",
         )
 
-
-# ══════════════════════════════════════════════
 # CEREMONY MODEL (Parent Class)
-# ══════════════════════════════════════════════
 
 class Ceremony:
-    """Abstract parent class for all ceremony types.
+    
+    """Base class for all ceremony types.
 
-    Provides common attributes and methods shared across all ceremony types:
-    - Basic info (name, type, date, location, status)
-    - Budget and financial tracking
-    - Guest management via invitations
-    - Expense tracking
-    - Contribution tracking
-    - Reporting and summary generation
+    Handles common logic: budget tracking, guest invitations,
+    expenses, contributions, and report generation.
 
-    Subclasses override calculate_cost() and generate_report()
-    to provide type-specific logic.
+    Subclasses (MarriageCeremony, FuneralCeremony, etc.) override
+    calculate_cost() and generate_report() for type-specific behavior.
     """
 
     def __init__(
@@ -355,36 +335,31 @@ class Ceremony:
         self.expense_ids: List[str] = []
         self.contribution_ids: List[str] = []
 
-    # ── Properties ──────────────────────────
+    # Properties
 
     @property
     def total_expenses(self) -> float:
-        """Calculate total expenses from loaded expense objects."""
         return sum(e.amount for e in self._loaded_expenses)
 
     @property
     def total_contributions(self) -> float:
-        """Calculate total contributions from loaded contribution objects."""
         return sum(c.amount for c in self._loaded_contributions)
 
     @property
     def balance(self) -> float:
-        """Calculate the current balance (contributions - expenses)."""
         return self.total_contributions - self.total_expenses
 
     @property
     def budget_remaining(self) -> float:
-        """Calculate remaining budget."""
         return self.budget - self.total_expenses
 
     @property
     def budget_usage_percent(self) -> float:
-        """Calculate budget usage as a percentage."""
         if self.budget <= 0:
             return 0.0
         return min((self.total_expenses / self.budget) * 100, 999.9)
 
-    # ── Runtime-loaded associations ─────────
+    # Runtime-loaded associations
 
     _loaded_expenses: List[Expense] = []
     _loaded_contributions: List[Contribution] = []
@@ -401,7 +376,7 @@ class Ceremony:
         self._loaded_contributions = contributions or []
         self._loaded_invitations = invitations or []
 
-    # ── Polymorphic Methods ─────────────────
+    # Polymorphic Methods
 
     def calculate_cost(self) -> float:
         """Calculate the estimated total cost for this ceremony.
@@ -431,17 +406,17 @@ class Ceremony:
         return "\n".join(lines)
 
     def display_summary(self) -> str:
-        """Generate a brief one-line summary string."""
+        """Return a one-line summary: ID | name | type | date | status."""
         return (
             f"{self.ceremony_id} | {self.name} | "
             f"{self.ceremony_type.title()} | {self.ceremony_date} | "
             f"{self.status.title()}"
         )
 
-    # ── Serialization ───────────────────────
+    # Serialization 
 
     def _base_to_parts(self) -> list:
-        """Return base ceremony fields as a list for serialization."""
+        """Return the 13 base fields as a list. Subclasses append their own fields after."""
         return [
             self.ceremony_id,
             self.ceremony_type,
@@ -459,7 +434,7 @@ class Ceremony:
         ]
 
     def _base_from_parts(self, parts: list) -> None:
-        """Restore base ceremony fields from a parts list."""
+        """Restore the 13 base ceremony fields from a parts list."""
         self.ceremony_id = parts[0]
         self.ceremony_type = parts[1]
         self.name = parts[2]
@@ -507,20 +482,18 @@ class Ceremony:
         return obj
 
 
-# ══════════════════════════════════════════════
 # MARRIAGE CEREMONY
-# ══════════════════════════════════════════════
 
 class MarriageCeremony(Ceremony):
     """Marriage ceremony with cultural specifics for Burkina Faso.
 
     Extra Attributes:
-        bride_name     - Full name of the bride
-        groom_name     - Full name of the groom
-        dot_amount     - Traditional bride price (dot) in FCFA
-        marriage_stage - Stage of marriage (traditional/civil/religious/all_stages)
-        bride_family   - Bride's family name
-        groom_family   - Groom's family name
+        bride_name : Full name of the bride
+        groom_name : Full name of the groom
+        dot_amount : Traditional bride price (dot) in FCFA
+        marriage_stage : Stage of marriage (traditional/civil/religious/all_stages)
+        bride_family : Bride's family name
+        groom_family : Groom's family name
     """
 
     def __init__(
@@ -601,21 +574,18 @@ class MarriageCeremony(Ceremony):
         ]
         return FIELD_SEP.join(base_parts + extra)
 
-
-# ══════════════════════════════════════════════
 # FUNERAL CEREMONY
-# ══════════════════════════════════════════════
 
 class FuneralCeremony(Ceremony):
     """Funeral ceremony with cultural specifics for Burkina Faso.
 
     Extra Attributes:
-        deceased_name   - Full name of the deceased
-        deceased_age    - Age of the deceased
-        village_of_origin - Village of origin for burial
-        funeral_type    - Type (traditional/religious/mixed)
-        duration_days   - Number of days the funeral lasts
-        mourning_period - Mourning period description
+        deceased_name : Full name of the deceased
+        deceased_age : Age of the deceased
+        village_of_origin : Village of origin for burial
+        funeral_type : Type (traditional/religious/mixed)
+        duration_days : Number of days the funeral lasts
+        mourning_period : Mourning period description
     """
 
     def __init__(
@@ -655,7 +625,8 @@ class FuneralCeremony(Ceremony):
 
     def calculate_cost(self) -> float:
         """Funeral cost includes all expenses plus per-day overhead."""
-        daily_overhead = 15000  # FCFA per day
+        daily_overhead = 15000 
+        # estimated daily cost: meals + logistics for extended family in francs CFa
         return self.total_expenses + (daily_overhead * self.duration_days)
 
     def generate_report(self) -> str:
@@ -697,21 +668,18 @@ class FuneralCeremony(Ceremony):
         ]
         return FIELD_SEP.join(base_parts + extra)
 
-
-# ══════════════════════════════════════════════
 # BAPTISM CEREMONY
-# ══════════════════════════════════════════════
 
 class BaptismCeremony(Ceremony):
     """Baptism ceremony with cultural specifics.
 
     Extra Attributes:
-        child_name       - Full name of the child being baptized
-        child_age_months - Age of the child in months
-        godfather_name   - Name of the godfather (parrain)
-        godmother_name   - Name of the godmother (marraine)
-        church_name      - Name of the church
-        priest_name      - Name of the officiating priest/pastor
+        child_name : Full name of the child being baptized
+        child_age_months : Age of the child in months
+        godfather_name : Name of the godfather (parrain)
+        godmother_name : Name of the godmother (marraine)
+        church_name : Name of the church
+        priest_name : Name of the officiating priest/pastor
     """
 
     def __init__(
@@ -793,20 +761,17 @@ class BaptismCeremony(Ceremony):
         ]
         return FIELD_SEP.join(base_parts + extra)
 
-
-# ══════════════════════════════════════════════
 # SEMINAR CEREMONY
-# ══════════════════════════════════════════════
 
 class SeminarCeremony(Ceremony):
     """Seminar / Conference ceremony.
 
     Extra Attributes:
-        topic           - Main topic or theme
-        speaker_names   - List of speaker names (semicolon-separated)
-        num_attendees   - Expected number of attendees
-        venue_type      - Type of venue (hotel/conference_hall/outdoor/other)
-        includes_meals  - Whether meals are included
+        topic : Main topic or theme
+        speaker_names : List of speaker names (semicolon-separated)
+        num_attendees : Expected number of attendees
+        venue_type : Type of venue (hotel/conference_hall/outdoor/other)
+        includes_meals : Whether meals are included
     """
 
     def __init__(
@@ -844,7 +809,7 @@ class SeminarCeremony(Ceremony):
 
     def calculate_cost(self) -> float:
         """Seminar cost includes all expenses plus per-attendee meal cost."""
-        meal_cost_per_person = 3500  # FCFA per meal
+        meal_cost_per_person = 3500  
         meal_total = 0
         if self.includes_meals:
             meal_total = meal_cost_per_person * self.num_attendees
